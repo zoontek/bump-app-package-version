@@ -1,19 +1,28 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
+  "exclude": ["./dist", "./node_modules"],
   "compilerOptions": {
-    "target": "ES2022",
     "module": "NodeNext",
-    "rootDir": "./src",
+    "target": "ES2022",
     "moduleResolution": "NodeNext",
+
+    "rootDir": "./src",
     "baseUrl": "./",
-    "sourceMap": true,
     "outDir": "./dist",
-    "noImplicitAny": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+
+    "allowJs": false,
     "strict": true,
+    "noEmitOnError": true,
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "newLine": "lf"
-  },
-  "exclude": ["./dist", "./node_modules", "./__tests__", "./coverage"]
+
+    // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
 }
