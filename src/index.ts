@@ -1,33 +1,56 @@
 import * as core from "@actions/core";
+import { globSync } from "fast-glob";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as semver from "semver";
 
-async function wait(milliseconds: number): Promise<string> {
-  return new Promise((resolve) => {
-    if (isNaN(milliseconds)) {
-      throw new Error("milliseconds not a number");
+try {
+  const prefix: string = core.getInput("prefix");
+  const type: string = core.getInput("type");
+
+  if (type !== "patch" && type !== "minor" && type !== "major") {
+    throw new Error(`Invalid type "${type}"`);
+  }
+
+  const pkgPath = path.join(process.cwd(), "package.json");
+
+  if (!fs.existsSync(pkgPath)) {
+    throw new Error("package.json file does not exist");
+  }
+
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as {
+    version?: string;
+    workspaces?: { packages?: string[] };
+  };
+
+  const version = semver.parse(pkg.version);
+  const packages = pkg.workspaces?.packages ?? [];
+
+  if (version == null) {
+    throw new Error("package.json does not have a valid version");
+  }
+
+  const oldVersion = version.toString();
+  const newVersion = version.inc(type).toString();
+  const toReplace = `"version": "${oldVersion}"`;
+
+  globSync(["package.json", ...packages.map((item) => path.join(item, "package.json"))], {
+    ignore: ["node_modules"],
+  }).forEach((name) => {
+    const file = path.join(process.cwd(), name);
+    const text = fs.readFileSync(file, "utf-8");
+
+    if (!text.includes(toReplace)) {
+      throw new Error(`${name} does not contain ${toReplace}`);
     }
 
-    setTimeout(() => resolve("done!"), milliseconds);
+    const nextText = text.replace(toReplace, `"version": "${newVersion}"`);
+    fs.writeFileSync(file, nextText, "utf-8");
   });
+
+  core.setOutput("old_version", prefix + oldVersion);
+  core.setOutput("new_version", prefix + newVersion);
+} catch (error) {
+  console.error(error);
+  process.exit(1);
 }
-
-async function run(): Promise<void> {
-  try {
-    const ms: string = core.getInput("milliseconds");
-
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`);
-
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString());
-    await wait(parseInt(ms, 10));
-    core.debug(new Date().toTimeString());
-
-    // Set outputs for other workflow steps to use
-    core.setOutput("time", new Date().toTimeString());
-  } catch (error) {
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message);
-  }
-}
-
-run();

@@ -1,14 +1,14 @@
 {
-  "name": "bump-package-version",
+  "name": "bump-app-package-version",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "A GitHub action to bump package.json versions",
+  "description": "A GitHub action to bump your app package.json version",
   "author": "Mathieu Acthernoene <zoontek@gmail.com>",
-  "homepage": "https://github.com/zoontek/bump-package-version#readme",
+  "homepage": "https://github.com/zoontek/bump-app-package-version#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zoontek/bump-package-version.git"
+    "url": "https://github.com/zoontek/bump-app-package-version.git"
   },
   "exports": {
     ".": "./dist/index.js"
@@ -18,19 +18,23 @@
   },
   "scripts": {
     "format": "prettier '**/*' -u -w",
-    "build": "rm -rf dist && ncc build src/index.ts -o dist --source-map",
+    "build": "rm -rf dist && ncc build src/index.ts -o dist",
     "typecheck": "tsc --noEmit"
   },
   "prettier": {
+    "printWidth": 100,
     "plugins": [
       "prettier-plugin-organize-imports"
     ]
   },
   "dependencies": {
-    "@actions/core": "^1.10.1"
+    "@actions/core": "^1.10.1",
+    "fast-glob": "^3.3.2",
+    "semver": "^7.6.2"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
+    "@types/semver": "^7.5.8",
     "@vercel/ncc": "^0.38.1",
     "prettier": "^3.3.1",
     "prettier-plugin-organize-imports": "^3.2.4",
